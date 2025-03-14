@@ -1,0 +1,28 @@
+<!-- ...existing code... -->
+<button id="saveButton">Guardar</button>
+<!-- ...existing code... -->
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const saveButton = document.getElementById('saveButton');
+        if (saveButton) {
+            saveButton.addEventListener('click', function() {
+                // Mostrar SweetAlert
+                Swal.fire({
+                    title: 'Guardado!',
+                    text: 'El expediente ha sido guardado.',
+                    icon: 'success',
+                    confirmButtonText: 'OK'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        // Redirigir a la nueva lista con el expediente agregado
+                        window.location.href = '/estudio/';
+                    }
+                });
+            });
+        } else {
+            console.error('No se encontró el botón con el ID saveButton');
+        }
+    });
+</script>
+<!-- ...existing code... -->

@@ -1,0 +1,462 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Expedientes</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary: #ff6b00;
+            --primary-dark: #e05a00;
+            --dark: #1a1a1a;
+            --dark-light: #2d2d2d;
+            --light: #f5f5f5;
+            --gray: #e0e0e0;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background-color: var(--dark);
+            color: var(--light);
+            min-height: 100vh;
+        }
+        
+        .container {
+            width: 90%;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem 0;
+        }
+        
+        header {
+            background-color: var(--dark-light);
+            padding: 1.5rem 0;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            margin-bottom: 2rem;
+        }
+        
+        h1 {
+            color: var(--primary);
+            font-size: 2.5rem;
+            margin-bottom: 0.5rem;
+            text-align: center;
+        }
+        
+        .actions {
+            display: flex;
+            justify-content: center;
+            gap: 1rem;
+            margin: 2rem 0;
+            flex-wrap: wrap;
+        }
+        
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            padding: 0.75rem 1.5rem;
+            background-color: var(--primary);
+            color: white;
+            text-decoration: none;
+            border-radius: 6px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            gap: 0.5rem;
+        }
+        
+        .btn:hover {
+            background-color: var(--primary-dark);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(255, 107, 0, 0.3);
+        }
+        
+        .btn-danger {
+            background-color: #e53935;
+        }
+        
+        .btn-danger:hover {
+            background-color: #c62828;
+            box-shadow: 0 4px 12px rgba(229, 57, 53, 0.3);
+        }
+        
+        .table-container {
+            overflow-x: auto;
+            background-color: var(--dark-light);
+            border-radius: 8px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            text-align: left;
+        }
+        
+        th, td {
+            padding: 1rem;
+            border-bottom: 1px solid #444;
+        }
+        
+        th {
+            background-color: var(--dark);
+            color: var(--primary);
+            font-weight: 600;
+            cursor: pointer;
+            position: relative;
+            user-select: none;
+        }
+        
+        th:hover {
+            background-color: #222;
+        }
+        
+        th::after {
+            content: '↕';
+            position: absolute;
+            right: 1rem;
+            color: #666;
+        }
+        
+        th.sort-asc::after {
+            content: '↑';
+            color: var(--primary);
+        }
+        
+        th.sort-desc::after {
+            content: '↓';
+            color: var(--primary);
+        }
+        
+        tbody tr {
+            transition: background-color 0.3s ease;
+        }
+        
+        tbody tr:hover {
+            background-color: #333;
+        }
+        
+        .search-container {
+            margin-bottom: 1.5rem;
+            display: flex;
+            gap: 1rem;
+        }
+        
+        .search-input {
+            flex: 1;
+            padding: 0.75rem 1rem;
+            border: none;
+            border-radius: 6px;
+            background-color: var(--dark-light);
+            color: white;
+            font-size: 1rem;
+            border: 1px solid #444;
+        }
+        
+        .search-input:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 2px rgba(255, 107, 0, 0.2);
+        }
+        
+        .status {
+            display: inline-block;
+            padding: 0.25rem 0.75rem;
+            border-radius: 50px;
+            font-size: 0.85rem;
+            font-weight: 600;
+        }
+        
+        .status-active {
+            background-color: rgba(76, 175, 80, 0.2);
+            color: #4CAF50;
+        }
+        
+        .status-pending {
+            background-color: rgba(255, 193, 7, 0.2);
+            color: #FFC107;
+        }
+        
+        .status-closed {
+            background-color: rgba(158, 158, 158, 0.2);
+            color: #9E9E9E;
+        }
+        
+        .empty-state {
+            text-align: center;
+            padding: 3rem;
+            color: #777;
+        }
+        
+        @media (max-width: 768px) {
+            .actions {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            
+            .btn {
+                text-align: center;
+                justify-content: center;
+            }
+            
+            th, td {
+                padding: 0.75rem 0.5rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="container">
+            <h1><i class="fas fa-folder"></i> Expedientes</h1>
+        </div>
+    </header>
+    
+    <main class="container">
+        <div class="actions">
+            <a href="{% url 'agregar_expediente' %}" class="btn">
+                <i class="fas fa-plus-circle"></i> Agregar nuevo expediente
+            </a>
+            <a href="{% url 'eliminar_todos_expedientes' %}" class="btn btn-danger" id="delete-all-btn">
+                <i class="fas fa-trash-alt"></i> Eliminar todos los expedientes
+            </a>
+        </div>
+        
+        <div class="search-container">
+            <input type="text" id="search-input" class="search-input" placeholder="Buscar expedientes...">
+        </div>
+        
+        <div class="table-container">
+            <table id="expedientes-table">
+                <thead>
+                    <tr>
+                        <th data-sort="fecha">Fecha</th>
+                        <th data-sort="caratula">Carátula</th>
+                        <th data-sort="objeto">Objeto</th>
+                        <th data-sort="estado">Estado</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for expediente in expedientes %}
+                    <tr data-descripcion="{{ expediente.descripcion }}">
+                        <td>{{ expediente.fecha }}</td>
+                        <td>{{ expediente.caratula }}</td>
+                        <td>{{ expediente.objeto }}</td>
+                        <td>
+                            <span class="status {% if expediente.estado == 'Activo' %}status-active{% elif expediente.estado == 'Pendiente' %}status-pending{% else %}status-closed{% endif %}">
+                                {{ expediente.estado }}
+                            </span>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="4" class="empty-state">
+                            <i class="fas fa-folder-open" style="font-size: 3rem; margin-bottom: 1rem; display: block;"></i>
+                            No hay expedientes disponibles
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </main>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Confirm delete all
+            const deleteAllBtn = document.getElementById('delete-all-btn');
+            if (deleteAllBtn) {
+                deleteAllBtn.addEventListener('click', function(e) {
+                    if (!confirm('¿Está seguro que desea eliminar todos los expedientes? Esta acción no se puede deshacer.')) {
+                        e.preventDefault();
+                    }
+                });
+            }
+            
+            // Table sorting
+            const table = document.getElementById('expedientes-table');
+            const headers = table.querySelectorAll('th');
+            let currentSort = { column: null, direction: 'asc' };
+            
+            headers.forEach(header => {
+                header.addEventListener('click', () => {
+                    const column = header.dataset.sort;
+                    const direction = 
+                        currentSort.column === column && currentSort.direction === 'asc' 
+                            ? 'desc' 
+                            : 'asc';
+                    
+                    // Update sort indicators
+                    headers.forEach(h => {
+                        h.classList.remove('sort-asc', 'sort-desc');
+                    });
+                    
+                    header.classList.add(direction === 'asc' ? 'sort-asc' : 'sort-desc');
+                    
+                    // Sort the table
+                    sortTable(column, direction);
+                    
+                    // Update current sort
+                    currentSort = { column, direction };
+                });
+            });
+            
+            function sortTable(column, direction) {
+                const tbody = table.querySelector('tbody');
+                const rows = Array.from(tbody.querySelectorAll('tr'));
+                
+                // Skip if there's an empty state row
+                if (rows.length === 1 && rows[0].querySelector('.empty-state')) {
+                    return;
+                }
+                
+                // Sort the rows
+                const sortedRows = rows.sort((a, b) => {
+                    const aValue = a.children[getColumnIndex(column)].textContent.trim();
+                    const bValue = b.children[getColumnIndex(column)].textContent.trim();
+                    
+                    // Handle date sorting
+                    if (column === 'fecha') {
+                        return direction === 'asc' 
+                            ? new Date(aValue) - new Date(bValue)
+                            : new Date(bValue) - new Date(aValue);
+                    }
+                    
+                    // Handle text sorting
+                    return direction === 'asc'
+                        ? aValue.localeCompare(bValue)
+                        : bValue.localeCompare(aValue);
+                });
+                
+                // Clear the table
+                while (tbody.firstChild) {
+                    tbody.removeChild(tbody.firstChild);
+                }
+                
+                // Add sorted rows
+                sortedRows.forEach(row => {
+                    tbody.appendChild(row);
+                });
+            }
+            
+            function getColumnIndex(column) {
+                const columns = ['fecha', 'caratula', 'objeto', 'estado'];
+                return columns.indexOf(column);
+            }
+            
+            // Search functionality
+            const searchInput = document.getElementById('search-input');
+            searchInput.addEventListener('input', function() {
+                const searchTerm = this.value.toLowerCase();
+                const rows = table.querySelectorAll('tbody tr');
+                
+                rows.forEach(row => {
+                    // Skip empty state row
+                    if (row.querySelector('.empty-state')) {
+                        return;
+                    }
+                    
+                    const text = row.textContent.toLowerCase();
+                    row.style.display = text.includes(searchTerm) ? '' : 'none';
+                });
+                
+                // Show empty message if no results
+                const visibleRows = Array.from(rows).filter(row => row.style.display !== 'none');
+                const emptyStateRow = table.querySelector('.empty-state');
+                
+                if (visibleRows.length === 0 && !emptyStateRow) {
+                    const emptyRow = document.createElement('tr');
+                    emptyRow.innerHTML = `
+                        <td colspan="4" class="empty-state">
+                            <i class="fas fa-search" style="font-size: 3rem; margin-bottom: 1rem; display: block;"></i>
+                            No se encontraron resultados para "${searchTerm}"
+                        </td>
+                    `;
+                    emptyRow.classList.add('search-empty-state');
+                    tbody.appendChild(emptyRow);
+                } else if (visibleRows.length > 0) {
+                    const searchEmptyState = table.querySelector('.search-empty-state');
+                    if (searchEmptyState) {
+                        searchEmptyState.remove();
+                    }
+                }
+            });
+            
+            // Add row hover effect
+            const rows = table.querySelectorAll('tbody tr');
+            rows.forEach(row => {
+                if (!row.querySelector('.empty-state')) {
+                    row.addEventListener('mouseenter', function() {
+                        this.style.transform = 'translateX(5px)';
+                        this.style.transition = 'transform 0.2s ease';
+                    });
+                    
+                    row.addEventListener('mouseleave', function() {
+                        this.style.transform = 'translateX(0)';
+                    });
+                }
+            });
+
+            // Show description on hover
+            rows.forEach(row => {
+                const descripcion = row.dataset.descripcion;
+                if (descripcion) {
+                    row.addEventListener('mouseenter', function() {
+                        const tooltip = document.createElement('div');
+                        tooltip.className = 'tooltip';
+                        tooltip.textContent = descripcion;
+                        document.body.appendChild(tooltip);
+
+                        const rect = row.getBoundingClientRect();
+                        tooltip.style.left = `${rect.left + window.scrollX}px`;
+                        tooltip.style.top = `${rect.bottom + window.scrollY}px`;
+
+                        // Slide in effect
+                        tooltip.style.opacity = '0';
+                        tooltip.style.transform = 'translateY(10px)';
+                        setTimeout(() => {
+                            tooltip.style.opacity = '1';
+                            tooltip.style.transform = 'translateY(0)';
+                        }, 0);
+                    });
+
+                    row.addEventListener('mouseleave', function() {
+                        const tooltip = document.querySelector('.tooltip');
+                        if (tooltip) {
+                            tooltip.style.opacity = '0';
+                            tooltip.style.transform = 'translateY(10px)';
+                            setTimeout(() => {
+                                tooltip.remove();
+                            }, 300);
+                        }
+                    });
+                }
+            });
+        });
+
+        // Tooltip styles
+        const style = document.createElement('style');
+        style.textContent = `
+            .tooltip {
+                position: absolute;
+                background-color: rgba(255, 107, 0, 0.9);
+                color: white;
+                padding: 1rem;
+                border-radius: 8px;
+                box-shadow: 0 4px 12px rgba(255, 107, 0, 0.3);
+                z-index: 1000;
+                pointer-events: none;
+                transition: opacity 0.3s ease, transform 0.3s ease;
+                max-width: 300px;
+                margin-top: 10px;
+            }
+        `;
+        document.head.appendChild(style);
+    </script>
+</body>
+</html>

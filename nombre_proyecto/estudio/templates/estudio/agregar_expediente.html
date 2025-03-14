@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Agregar Expediente</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary: #ff6b00;
+            --primary-dark: #e05a00;
+            --dark: #1a1a1a;
+            --dark-light: #2d2d2d;
+            --light: #f5f5f5;
+            --gray: #e0e0e0;
+            --error: #e53935;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background-color: var(--dark);
+            color: var(--light);
+            min-height: 100vh;
+        }
+        
+        .container {
+            width: 90%;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 2rem 0;
+        }
+        
+        header {
+            background-color: var(--dark-light);
+            padding: 1.5rem 0;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            margin-bottom: 2rem;
+        }
+        
+        h1 {
+            color: var(--primary);
+            font-size: 2.5rem;
+            margin-bottom: 0.5rem;
+            text-align: center;
+        }
+        
+        .form-container {
+            background-color: var(--dark-light);
+            border-radius: 8px;
+            padding: 2rem;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+            animation: fadeIn 0.5s ease;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+            color: var(--light);
+        }
+        
+        input, textarea, select {
+            width: 100%;
+            padding: 0.75rem 1rem;
+            background-color: var(--dark);
+            border: 1px solid #444;
+            border-radius: 6px;
+            color: white;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+        }
+        
+        input:focus, textarea:focus, select:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 2px rgba(255, 107, 0, 0.2);
+        }
+        
+        textarea {
+            min-height: 120px;
+            resize: vertical;
+        }
+        
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            padding: 0.75rem 1.5rem;
+            background-color: var(--primary);
+            color: white;
+            text-decoration: none;
+            border: none;
+            border-radius: 6px;
+            font-weight: 600;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            gap: 0.5rem;
+        }
+        
+        .btn:hover {
+            background-color: var(--primary-dark);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(255, 107, 0, 0.3);
+        }
+        
+        .btn-secondary {
+            background-color: transparent;
+            border: 1px solid #555;
+        }
+        
+        .btn-secondary:hover {
+            background-color: rgba(255, 255, 255, 0.05);
+            box-shadow: none;
+        }
+        
+        .actions {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 2rem;
+            gap: 1rem;
+        }
+        
+        /* Style Django form errors */
+        .errorlist {
+            list-style: none;
+            color: var(--error);
+            margin-top: 0.5rem;
+            font-size: 0.9rem;
+        }
+        
+        /* Style Django form paragraphs */
+        form p {
+            margin-bottom: 1.5rem;
+        }
+        
+        /* Custom styling for Django form elements */
+        form p label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+        }
+        
+        form p input, form p select, form p textarea {
+            width: 100%;
+            padding: 0.75rem 1rem;
+            background-color: var(--dark);
+            border: 1px solid #444;
+            border-radius: 6px;
+            color: white;
+            font-size: 1rem;
+        }
+        
+        .help-text {
+            display: block;
+            margin-top: 0.5rem;
+            color: #888;
+            font-size: 0.9rem;
+        }
+        
+        .required {
+            color: var(--primary);
+        }
+        
+        .form-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 2rem;
+        }
+        
+        .form-icon {
+            font-size: 2rem;
+            color: var(--primary);
+            margin-right: 1rem;
+        }
+        
+        @media (max-width: 768px) {
+            .actions {
+                flex-direction: column-reverse;
+            }
+            
+            .btn {
+                width: 100%;
+                justify-content: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="container">
+            <h1><i class="fas fa-folder-plus"></i> Agregar Expediente</h1>
+        </div>
+    </header>
+    
+    <main class="container">
+        <div class="form-container">
+            <div class="form-header">
+                <div class="form-icon">
+                    <i class="fas fa-file-alt"></i>
+                </div>
+                <div>
+                    <h2>Nuevo Expediente</h2>
+                    <p>Complete los campos para registrar un nuevo expediente</p>
+                </div>
+            </div>
+            
+            <form method="post" id="expediente-form">
+                {% csrf_token %}
+                
+                <div class="django-form">
+                    {{ form.as_p }}
+                </div>
+                
+                <div class="actions">
+                    <a href="javascript:history.back()" class="btn btn-secondary">
+                        <i class="fas fa-arrow-left"></i> Volver
+                    </a>
+                    <button type="submit" class="btn">
+                        <i class="fas fa-save"></i> Guardar Expediente
+                    </button>
+                </div>
+            </form>
+        </div>
+    </main>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const form = document.getElementById('expediente-form');
+            
+            // Add form validation
+            form.addEventListener('submit', function(e) {
+                let isValid = true;
+                const requiredFields = form.querySelectorAll('input[required], textarea[required], select[required]');
+                
+                // Remove existing error messages
+                const errorMessages = form.querySelectorAll('.error-message');
+                errorMessages.forEach(el => el.remove());
+                
+                // Check required fields
+                requiredFields.forEach(field => {
+                    field.classList.remove('error-field');
+                    
+                    if (!field.value.trim()) {
+                        isValid = false;
+                        field.classList.add('error-field');
+                        
+                        // Add error message
+                        const errorMsg = document.createElement('div');
+                        errorMsg.className = 'error-message';
+                        errorMsg.style.color = 'var(--error)';
+                        errorMsg.style.fontSize = '0.9rem';
+                        errorMsg.style.marginTop = '0.5rem';
+                        errorMsg.innerHTML = '<i class="fas fa-exclamation-circle"></i> Este campo es obligatorio';
+                        
+                        field.parentNode.appendChild(errorMsg);
+                        
+                        // Add shake animation
+                        field.style.animation = 'shake 0.5s';
+                        setTimeout(() => {
+                            field.style.animation = '';
+                        }, 500);
+                    }
+                });
+                
+                if (!isValid) {
+                    e.preventDefault();
+                    
+                    // Scroll to first error
+                    const firstError = form.querySelector('.error-field');
+                    if (firstError) {
+                        firstError.focus();
+                        firstError.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    }
+                }
+            });
+            
+            // Add animation to form fields
+            const formGroups = document.querySelectorAll('.form-group, form p');
+            formGroups.forEach((group, index) => {
+                group.style.opacity = '0';
+                group.style.transform = 'translateY(20px)';
+                group.style.transition = 'opacity 0.3s ease, transform 0.3s ease';
+                
+                setTimeout(() => {
+                    group.style.opacity = '1';
+                    group.style.transform = 'translateY(0)';
+                }, 100 + (index * 50));
+            });
+            
+            // Add focus and blur effects to inputs
+            const inputs = document.querySelectorAll('input, textarea, select');
+            inputs.forEach(input => {
+                // Add label animation on focus
+                input.addEventListener('focus', function() {
+                    const label = this.previousElementSibling;
+                    if (label && label.tagName === 'LABEL') {
+                        label.style.color = 'var(--primary)';
+                        label.style.transition = 'color 0.3s ease';
+                    }
+                });
+                
+                // Remove label animation on blur
+                input.addEventListener('blur', function() {
+                    const label = this.previousElementSibling;
+                    if (label && label.tagName === 'LABEL') {
+                        label.style.color = '';
+                    }
+                });
+            });
+            
+            // Add keyframe animation for shake effect
+            const style = document.createElement('style');
+            style.textContent = `
+                @keyframes shake {
+                    0%, 100% { transform: translateX(0); }
+                    20%, 60% { transform: translateX(-5px); }
+                    40%, 80% { transform: translateX(5px); }
+                }
+                
+                .error-field {
+                    border-color: var(--error) !important;
+                }
+            `;
+            document.head.appendChild(style);
+        });
+    </script>
+</body>
+</html>
